@@ -73,6 +73,13 @@ function main(): void {
   const primary = resolve(outputDir, "entry.txt");
   writeAndVerify(primary, bytes);
 
+  // Final gate: the bytes on disk must hash to the same value as the entry
+  // bytes, so a partial or altered write fails loudly before anything prints.
+  const onDisk = readFileSync(primary);
+  if (sha256Hex(onDisk) !== sha256Hex(bytes)) {
+    fail("final gate failed: entry.txt on disk does not match the entry");
+  }
+
   const mirror = resolve("/output/entry.txt");
   if (mirror !== primary) tryMirror(mirror, bytes);
 
